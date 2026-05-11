@@ -172,17 +172,26 @@ export default function QuotesPage() {
               data.map((item: Quote) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border p-5 flex flex-col md:flex-row justify-between gap-4 md:items-center"
+                  className="group relative bg-white rounded-2xl border p-5 flex flex-col md:flex-row justify-between gap-4 md:items-start shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-1 transition-all duration-300"
                 >
-                  {/* LEFT: Info Utama */}
-                  <div className="flex-1 space-y-2">
+                  {/* 💡 TOOLTIP UTAMA (Muncul saat kartu di-hover) */}
+                  <div className="absolute -top-10 left-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 hidden md:block">
+                    <div className="bg-gray-800 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-xl flex items-center gap-2">
+                      <i className="ri-information-line text-blue-300"></i>
+                      Click for more details
+                    </div>
+                    {/* Segitiga Tooltip */}
+                    <div className="w-2 h-2 bg-gray-800 rotate-45 ml-4 -mt-1"></div>
+                  </div>
+
+                  {/* LEFT: Info Identitas */}
+                  <div className="space-y-1 flex-1">
                     <div className="flex justify-between items-center md:block">
-                      <p className="font-bold text-blue-600 md:text-black">
+                      <p className="font-bold text-blue-600 md:text-black group-hover:text-blue-600 transition-colors">
                         {item.connote_no || "-"}
                       </p>
-                      {/* Status badge show on mobile header */}
                       <span
-                        className={`md:hidden px-3 py-1 rounded-full text-[10px] uppercase font-bold ${
+                        className={`md:hidden px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                           item.status === "delivered"
                             ? "bg-green-100 text-green-600"
                             : "bg-yellow-100 text-yellow-600"
@@ -197,67 +206,77 @@ export default function QuotesPage() {
                         ? new Date(item.createdAt).toLocaleDateString()
                         : "-"}
                     </p>
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium pt-1">
                       📍 {item.originArea?.suburb || "-"}{" "}
-                      <span className="text-gray-400">→</span>{" "}
+                      <span className="text-gray-400 px-1">→</span>{" "}
                       {item.destinationArea?.suburb || "-"}
                     </p>
                   </div>
 
-                  {/* MIDDLE: Detail Cargo - Grid on mobile */}
-                  <div className="grid grid-cols-2 md:flex md:flex-row gap-4 md:gap-8 text-sm border-t md:border-0 pt-4 md:pt-0">
-                    <div className="space-y-1">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">
-                        Temperature
+                  {/* MIDDLE: Detail Cargo */}
+                  <div className="grid grid-cols-2 md:block md:space-y-2 text-sm border-t md:border-0 pt-3 md:pt-0">
+                    <div className="group/detail relative">
+                      <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
+                        Temp
                       </p>
-                      <p className="font-medium">{item.temperature || "-"}</p>
+                      <p className="text-gray-600">{item.temperature || "-"}</p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
                         Unit
                       </p>
-                      <span className="text-blue-600 font-bold italic">
+                      <span className="text-blue-500 font-bold italic group-hover:underline transition-all">
                         {item.unit || "-"}
                       </span>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">
-                        Weight
-                      </p>
-                      <p className="font-medium">📦 {item.weight || 0} kg</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-gray-400 text-[10px] uppercase font-bold">
-                        Quantity
-                      </p>
-                      <p className="font-medium">Qty: {item.qty || 0}</p>
-                    </div>
                   </div>
 
-                  {/* RIGHT: Actions */}
-                  <div className="flex flex-row md:flex-col items-center md:items-end gap-2 border-t md:border-0 pt-4 md:pt-0">
+                  {/* MIDDLE: Weight & Qty */}
+                  <div className="grid grid-cols-2 md:block text-sm md:space-y-1">
+                    <p className="font-medium">📦 {item.weight || 0} kg</p>
+                    <p className="text-gray-500">Qty: {item.qty || 0}</p>
+                  </div>
+
+                  {/* RIGHT: Actions & Desktop Status */}
+                  <div className="flex flex-row md:flex-col items-center md:items-end gap-3 border-t md:border-0 pt-4 md:pt-0">
                     <span
-                      className={`hidden md:block px-3 py-1 rounded-full text-xs font-bold ${
+                      className={`hidden md:block px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${
                         item.status === "delivered"
                           ? "bg-green-100 text-green-600"
-                          : "bg-yellow-100 text-yellow-600"
+                          : item.status === "transit"
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-yellow-100 text-yellow-600"
                       }`}
                     >
                       {item.status || "-"}
                     </span>
-                    <div className="flex flex-row gap-2 w-full">
-                      <Link
-                        href={`/track-shipment/${item.connote_no}`}
-                        className="flex-1 text-center border border-blue-500 text-blue-500 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition"
-                      >
-                        Track
-                      </Link>
-                      <Link
-                        href={`/invoice/${item.connote_no}`}
-                        className="flex-1 text-center bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-black transition"
-                      >
-                        Invoice
-                      </Link>
+
+                    <div className="flex flex-row gap-2 w-full md:w-auto">
+                      {/* Tombol Track dengan Pop-up Kecil */}
+                      <div className="relative group/btn flex-1 md:flex-none">
+                        <Link
+                          href={`/track-shipment/${item.connote_no}`}
+                          className="block border border-blue-500 text-blue-500 px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95"
+                        >
+                          Track
+                        </Link>
+                        <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                          Check Status
+                        </span>
+                      </div>
+
+                      {/* Tombol Invoice dengan Pop-up Kecil */}
+                      <div className="relative group/btn flex-1 md:flex-none">
+                        <Link
+                          href={`/invoice/${item.connote_no}`}
+                          className="block bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-black transition-all shadow-sm active:scale-95"
+                        >
+                          Invoice
+                        </Link>
+                        <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                          View Billing
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
