@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 
 export default function LogoutButton() {
@@ -14,13 +13,13 @@ export default function LogoutButton() {
         credentials: "include",
       });
 
-      toast.success("Logout berhasil 👋");
+      toast.success("Thanks 👋");
 
       setTimeout(() => {
         router.push("/");
       }, 1000);
     } catch (error) {
-      toast.error("Gagal logout");
+      toast.error("Logout Failed");
     }
   };
 

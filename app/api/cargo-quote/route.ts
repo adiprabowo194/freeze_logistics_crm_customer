@@ -3,7 +3,8 @@ import { sequelize } from "@/lib/sequelize";
 import Quotes from "@/models/Quotes";
 import PackageDetails from "@/models/PackageDetail";
 import { getSessionUser } from "@/lib/auth";
-
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: NextRequest) {
   const t = await sequelize.transaction();
 
@@ -102,6 +103,29 @@ export async function POST(req: NextRequest) {
 
     await PackageDetails.bulkCreate(detailPayload, {
       transaction: t,
+    });
+
+    // ================= SEND EMAIL =================
+
+    await resend.emails.send({
+      from: "Freeze Logistics <no-reply@freezelogistics.com.au>",
+      to: process.env.EMAIL_QUOTE_SENDING
+        ? [process.env.EMAIL_QUOTE_SENDING]
+        : ["admin@freezelogistics.com.au"],
+      subject: `Job Order , Connote No :  ${connote_no}`,
+      html: `
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e5e7eb; border-radius: 10px;">
+              <h2 style="color:#3b82f6; margin-bottom: 20px;">New Quote from Customer 🚀</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px 0; font-weight: bold;">Connote No</td><td>: ${connote_no || "-"}</td></tr>
+                <tr><td style="padding: 8px 0; font-weight: bold;">Pickup</td><td>: ${pickup_address || "-"}</td></tr>
+                <tr><td style="padding: 8px 0; font-weight: bold;">Pickup Date</td><td style="color: #3b82f6; font-weight: bold;">: ${pickupDate}</td></tr>
+                <tr><td style="padding: 8px 0; font-weight: bold;">Receiver Destination</td><td>: ${delivery_address || "-"}</td></tr>
+                <tr><td style="padding: 8px 0; font-weight: bold;">Carrier</td><td>: ${carrier || "-"}</td></tr>
+                  </table>
+             
+            </div>
+          `,
     });
 
     await t.commit();

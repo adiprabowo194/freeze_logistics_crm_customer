@@ -13,6 +13,7 @@ import Button from "@/components/Button";
 
 import { useRouter } from "next/navigation";
 export default function QuickQuotePage() {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [step, setStep] = useState(1);
   // ================= TYPE =================
@@ -41,8 +42,6 @@ export default function QuickQuotePage() {
   const [pickupDate, setPickupDate] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [cargos, setCargos] = useState([]);
-
   // ================= AUTO LOAD CUSTOMER =================
   useEffect(() => {
     const fetchCustomer = async () => {
@@ -53,7 +52,7 @@ export default function QuickQuotePage() {
         // ✅ FIX: pakai field yang benar
         if (data?.pickup_suburb_code) {
           setPickupSuburb({
-            label: `${data.pickup_suburb_name}, ${data.postcode}`, // tampil
+            label: `${data.pickup_suburb_name}, ${data.state}, ${data.postcode}`, // tampil
             value: data.pickup_suburb_code, // value harus code
             area_code: data.pickup_suburb_code,
             postcode: data.postcode,
@@ -239,6 +238,7 @@ export default function QuickQuotePage() {
   // ================= SUBMIT =================
   const handleSubmit = async (status: "Entry" | "Booking") => {
     try {
+      setLoading(true);
       if (step === 2 && !selectedCarrier) {
         return toast.error("Please select carrier");
       }
@@ -318,13 +318,20 @@ export default function QuickQuotePage() {
     } catch (err: any) {
       toast.error(err.message);
     }
+    setLoading(false);
   };
 
   // Fungsi bantuan untuk mendapatkan format YYYY-MM-DD
   const getTomorrowDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+
+    const year = tomorrow.getFullYear();
+    // Menambahkan 1 karena bulan dimulai dari 0, lalu padStart agar jadi 2 digit
+    const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const day = String(tomorrow.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -379,7 +386,7 @@ export default function QuickQuotePage() {
                   onClick={handleAddCargo}
                   className="bg-yellow-400 text-white px-3 py-1 rounded-lg"
                 >
-                  + Add List
+                  + Add Item
                 </button>
               </div>
 
@@ -479,9 +486,6 @@ export default function QuickQuotePage() {
               <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">
                 Available Carriers
               </h2>
-              <span className="text-xs text-gray-400">
-                Prices include fuel surcharge & PPN
-              </span>
             </div>
 
             {loadingCarrier ? (
@@ -944,9 +948,10 @@ export default function QuickQuotePage() {
               {/* RIGHT */}
               <Button
                 onClick={() => handleSubmit("Booking")}
+                disabled={loading}
                 className="bg-blue-400 hover:bg-blue-500 text-black px-12 py-3 rounded-lg text-base"
               >
-                Submit Quote
+                {loading ? "Submitting..." : "Book Now"}
               </Button>
             </div>
           )}

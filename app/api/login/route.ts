@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+const { Op } = require("sequelize");
 import Users from "@/models/Users";
 import bcrypt from "bcrypt";
 
@@ -11,13 +12,16 @@ export async function POST(req: Request) {
     // CEK USER
     // ========================
     const user = await Users.findOne({
-      where: { email },
+      where: {
+        email: email,
+        role_id: { [Op.in]: [2] },
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { success: false, message: "Email tidak ditemukan" },
-        { status: 401 }
+        { success: false, message: "Email or Password not found1" },
+        { status: 401 },
       );
     }
 
@@ -30,8 +34,8 @@ export async function POST(req: Request) {
 
     if (!isMatch) {
       return NextResponse.json(
-        { success: false, message: "Password salah" },
-        { status: 401 }
+        { success: false, message: "Email or Password not found!" },
+        { status: 401 },
       );
     }
 
@@ -41,7 +45,7 @@ export async function POST(req: Request) {
     if (raw.status !== 1) {
       return NextResponse.json(
         { success: false, message: "User tidak aktif" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -62,17 +66,16 @@ export async function POST(req: Request) {
       {
         httpOnly: true,
         path: "/",
-      }
+      },
     );
 
     return response;
-
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       { success: false, message: "Server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { exportToExcel } from "@/utils/exportToExcel";
 
-import TopNavbar from "@/components/TopNavbar";
-import MenuBars from "@/components/MenuBars";
-
+// Hooks & Components
 import useQuotes from "@/hooks/useQuotes";
 import useSummary from "@/hooks/useSummary";
 import useDebounce from "@/hooks/useDebounce";
-import Link from "next/link";
+import TopNavbar from "@/components/TopNavbar";
+import MenuBars from "@/components/MenuBars";
 import Pagination from "@/components/Pagination";
 // 📦 TYPE
 interface Quote {
@@ -40,6 +41,7 @@ export default function QuotesByStatusPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [isExporting, setIsExporting] = useState(false);
   const [statusList, setStatusList] = useState<string[]>([
     "Booking",
     "Delivered",
@@ -73,8 +75,49 @@ export default function QuotesByStatusPage() {
     statusList,
   });
 
+  // 2. 🔥 Fungsi Export (Mengambil SEMUA data tanpa pagination)
+  const handleExportAll = async () => {
+    try {
+      setIsExporting(true); // Mulai loading
+      const response = await fetch(
+        `/api/quotes?status=${statusParam}&search=${debouncedSearch}&limit=10000`,
+      );
+      const result = await response.json();
+      const allData = result.data || [];
+
+      if (allData.length > 0) {
+        await exportToExcel(allData, `Freeze_Logistics_${statusParam}`);
+      } else {
+        alert("No data available to export");
+      }
+    } catch (error) {
+      console.error("Export Error:", error);
+    } finally {
+      // Beri sedikit delay (misal 500ms) agar transisi UI lebih halus sebelum overlay hilang
+      setTimeout(() => setIsExporting(false), 500);
+    }
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="relative bg-gray-50 min-h-screen">
+      {isExporting && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 animate-in fade-in zoom-in duration-300">
+            <div className="relative">
+              <div className="h-16 w-16 rounded-full border-4 border-gray-200"></div>
+              <div className="absolute top-0 h-16 w-16 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-bold text-gray-800">
+                Preparing Excel File
+              </h3>
+              <p className="text-sm text-gray-500">
+                Please wait, fetching all records...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <TopNavbar />
       <MenuBars />
 
@@ -89,6 +132,24 @@ export default function QuotesByStatusPage() {
               Filtered by status: {statusParam}
             </p>
           </div>
+          {/* Tombol hanya muncul jika status == booking */}
+          {statusParam === "booking" && (
+            <button
+              onClick={handleExportAll}
+              disabled={isExporting || loading}
+              className={`${
+                isExporting ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+              } text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg active:scale-95`}
+            >
+              {isExporting ? (
+                <>
+                  <span className="animate-spin">🌀</span> Processing...
+                </>
+              ) : (
+                <>📥 Export All to Excel</>
+              )}
+            </button>
+          )}
           {/* 🔍 SEARCH */}
           <div>
             <input

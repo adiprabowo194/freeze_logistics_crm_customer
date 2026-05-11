@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import React from "react";
 
 import Logo from "./Logo";
-import Link from "next/link";
 import LogoutButton from "./LogoutButton";
 
 function TopNavbar() {
