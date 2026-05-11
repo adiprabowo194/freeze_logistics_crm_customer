@@ -15,38 +15,12 @@ import TopNavbar from "@/components/TopNavbar";
 import MenuBars from "@/components/MenuBars";
 import InputField from "@/components/InputField";
 
-// 📦 TYPES
-interface Booking {
-  id: number;
-  connote_no: string;
-  cbm: string;
-
-  unit?: string; // 🔥 jadi optional
-
-  suburb_origin: string;
-  suburb_destination: string;
-  total_weight: number;
-  total_qty: number;
-  status: string;
-  createdAt: string;
-
-  originArea?: {
-    suburb?: string;
-    state?: string;
-  } | null;
-
-  destinationArea?: {
-    suburb?: string;
-    state?: string;
-  } | null;
-}
-
 export default function DashboardClient() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [limit, setLimit] = useState(10);
-  const [statusList, setStatusList] = useState<string[]>([
+  const [statusList] = useState<string[]>([
     "Booking",
     "Delivered",
     "Pickup",
@@ -60,33 +34,27 @@ export default function DashboardClient() {
     limit,
     search: debouncedSearch,
     status,
-    statusList, // 🔥 NEW
+    statusList,
   });
 
   const [showAlert, setShowAlert] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(false);
+
   useEffect(() => {
     const isLogin = sessionStorage.getItem("just_login");
-    setPage(1);
     if (isLogin) {
       setShowAlert(true);
       toast.success("Welcome to dashboard");
       sessionStorage.removeItem("just_login");
-
-      const timer = setTimeout(() => {
-        setShowAlert(false);
-      }, 3000);
-
+      const timer = setTimeout(() => setShowAlert(false), 3000);
       return () => clearTimeout(timer);
     }
-  }, [limit]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoadingMessage(true);
-
     const form = e.currentTarget;
-
     const payload = {
       enquiry: (form.enquiry as HTMLInputElement).value,
       connote_no: (form.connote_no as HTMLInputElement).value,
@@ -95,28 +63,17 @@ export default function DashboardClient() {
     try {
       const res = await fetch("/api/send-enquiry", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Failed send data");
-      } else {
-        toast.success("Your Enquiry successfully send");
-
-        // ✅ reset form
-        form.reset();
-      }
+      if (!res.ok) throw new Error();
+      toast.success("Your Enquiry successfully sent");
+      form.reset();
     } catch (error) {
-      console.error(error);
       toast.error("Something went wrong");
+    } finally {
+      setLoadingMessage(false);
     }
-
-    setLoadingMessage(false);
   };
 
   return (
@@ -125,114 +82,111 @@ export default function DashboardClient() {
       <MenuBars />
       <Toaster position="top-right" />
 
-      <div className="p-6 px-16">
+      {/* Padding dinamis: p-4 di mobile, lg:px-16 di desktop */}
+      <div className="p-4 md:p-6 lg:px-16 max-w-[1600px] mx-auto">
+        {/* ALERT */}
         {showAlert && (
-          <div className="mx-8 mb-4 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm">
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm animate-in fade-in slide-in-from-top-2">
             <span>✅ Welcome back! You have successfully logged in.</span>
             <button
               onClick={() => setShowAlert(false)}
-              className="ml-4 text-green-600 hover:text-green-800"
+              className="ml-4 text-green-600"
             >
               ✕
             </button>
           </div>
         )}
 
-        {/* 📊 RECENT JOBs */}
-        <div className="flex gap-4 mb-6 px-8">
-          <div className="bg-white rounded-2xl border shadow-sm p-6 w-2/4">
-            {/* item list recent jobs */}
-            <h2 className="text-2xl mb-4 font-semibold">Recent Jobs</h2>
-            {/* toolbar */}
-            <div className="flex gap-3">
-              {/* STATUS */}
+        {/* MAIN LAYOUT: Grid 1 kolom di mobile, 2 kolom di desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 📊 RECENT JOBS SECTION */}
+          <div className="bg-white rounded-2xl border shadow-sm p-4 md:p-6 order-2 lg:order-1">
+            <h2 className="text-xl md:text-2xl mb-4 font-bold text-gray-800">
+              Recent Jobs
+            </h2>
+
+            {/* TOOLBAR: flex-col di mobile */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <select
                 value={status}
                 onChange={(e) => {
                   setStatus(e.target.value);
-                  setPage(1); // 🔥 RESET PAGE
+                  setPage(1);
                 }}
-                className="border px-4 py-2 rounded-xl text-sm"
+                className="border px-4 py-2 rounded-xl text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
               >
                 <option value="">All Status</option>
-
                 <option value="Delivered">Delivered</option>
                 <option value="booking">Booking</option>
               </select>
 
-              {/* SEARCH */}
               <input
-                placeholder="Search connote / origin / destination..."
+                placeholder="Search connote..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
-                  setPage(1); // 🔥 RESET PAGE
+                  setPage(1);
                 }}
-                className="border px-3 py-2 rounded-xl text-sm w-full"
+                className="border px-4 py-2 rounded-xl text-sm w-full bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
-            {/* datatable */} {/* ✅ TABLE FIXED */}
-            {(data || []).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition my-4"
-              >
-                {/* LEFT */}
-                <div>
-                  <p className="font-semibold text-sm text-blue-400">
-                    {item.connote_no}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {item.originArea?.suburb} - {item.destinationArea?.suburb}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleDateString()
-                      : "-"}
-                  </p>
-                </div>
 
-                {/* MIDDLE */}
-                <div className="text-sm text-gray-600">
-                  <p>
-                    <i className="ri-archive-2-fill"></i> {item.total_qty} qty
-                  </p>
-                  <p>
-                    <i className="ri-weight-fill"></i> {item.total_weight} kg
-                  </p>
-                </div>
+            {/* LIST ITEMS */}
+            <div className="space-y-4">
+              {(data || []).map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/jobs/detail/${item.connote_no}`} // Pastikan path ini sesuai struktur folder Anda
+                  className="block group"
+                >
+                  <div className="flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm group-hover:border-blue-400 group-hover:shadow-md transition my-4">
+                    {/* Isi konten card Anda tetap sama seperti sebelumnya */}
+                    <div>
+                      <p className="font-semibold text-sm text-blue-600 group-hover:underline">
+                        {item.connote_no}
+                      </p>
+                      <p className="text-xs text-gray-500 uppercase font-medium">
+                        {item.originArea?.suburb} →{" "}
+                        {item.destinationArea?.suburb}
+                      </p>
+                    </div>
 
-                {/* RIGHT */}
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={item.status} />
-                </div>
-              </div>
-            ))}
+                    {/* ... sisa kode card (qty, weight, status badge) ... */}
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={item.status} />
+                      <i className="ri-arrow-right-s-line text-gray-300 group-hover:text-blue-500"></i>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
             {loading && (
-              <p className="text-sm text-gray-400 mt-2">Loading...</p>
+              <p className="text-center py-10 text-gray-400 animate-pulse">
+                Loading data...
+              </p>
             )}
             {!loading && data?.length === 0 && (
-              <p className="text-sm text-gray-400">No data found</p>
+              <p className="text-center py-10 text-gray-400">No jobs found.</p>
             )}
-            <div className="flex items-center justify-between relative">
-              {/* select option mengatur limit  */}
-              {/* 🔹 LIMIT SELECT */}
-              <div className="flex items-center gap-2 top-2 relative">
-                <span className="text-sm text-gray-500">Show</span>
+
+            {/* PAGINATION & LIMIT */}
+            <div className="mt-8 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>Show</span>
                 <select
                   value={limit}
                   onChange={(e) => {
                     setLimit(Number(e.target.value));
-                    setPage(1); // 🔥 reset page
+                    setPage(1);
                   }}
-                  className="border rounded-lg px-2 py-1 text-sm"
+                  className="border rounded-lg px-2 py-1 bg-white"
                 >
-                  <option value={limit}>{limit}</option>
+                  <option value={10}>10</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
-                  <option value={500}>500</option>
                 </select>
-                <span className="text-sm text-gray-500">entries</span>
+                <span>entries</span>
               </div>
               <Pagination
                 page={page}
@@ -241,45 +195,55 @@ export default function DashboardClient() {
               />
             </div>
           </div>
-          <div className=" w-2/4">
-            <div className="mb-4">
-              <div className="flex gap-4 w-full">
-                <Link href="/track-shipment" className="w-1/3 text-white">
-                  <Button type="submit" variant="blue" disabled={loading}>
-                    Tracking
-                  </Button>
-                </Link>
 
-                <Link href="/quote/quick-quote" className="w-2/3 ">
-                  <Button type="submit" disabled={loading} variant="yellow">
-                    <i className="ri-stack-line"></i> Quick Quote
-                  </Button>
-                </Link>
-              </div>
+          {/* ⚡ ACTION & ENQUIRY SECTION */}
+          <div className="space-y-6 order-1 lg:order-2">
+            {/* QUICK ACTIONS */}
+            <div className="flex gap-3 md:gap-4">
+              <Link href="/track-shipment" className="flex-1">
+                <Button
+                  variant="blue"
+                  className="w-full py-3 shadow-lg flex items-center justify-center gap-2 rounded-2xl"
+                >
+                  <i className="ri-map-pin-line"></i> Tracking
+                </Button>
+              </Link>
+              <Link href="/quote/quick-quote" className="flex-[2]">
+                <Button
+                  variant="yellow"
+                  className="w-full py-3 shadow-lg flex items-center justify-center gap-2 rounded-2xl text-yellow-900"
+                >
+                  <i className="ri-flashlight-line font-bold"></i> Quick Quote
+                </Button>
+              </Link>
             </div>
-            <div className="bg-white rounded-xl border shadow-sm p-6 w-full">
-              {" "}
-              {/* inquery message*/}
-              <h2 className="text-2xl mb-4 font-semibold">Enquiry</h2>
+
+            {/* ENQUIRY FORM */}
+            <div className="bg-white rounded-2xl border shadow-sm p-6">
+              <h2 className="text-xl md:text-2xl mb-4 font-bold text-gray-800">
+                Enquiry
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <InputField
                   type="text"
                   label="Connote Number"
                   name="connote_no"
                   required={true}
+                  placeholder="Ex: CN123..."
                 />
                 <TextareaField
-                  rows={5}
+                  rows={4}
                   label="Your Question"
                   name="enquiry"
                   required={true}
+                  placeholder="How can we help you?"
                 />
                 <Button
                   type="submit"
-                  disabled={loading}
-                  className="w-full rounded-full py-3 text-sm bg-gradient-to-r from-blue-500 to-indigo-500"
+                  disabled={loadingMessage}
+                  className="w-full rounded-xl py-3 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md active:scale-95"
                 >
-                  {loadingMessage ? "Submitting..." : "Send"}
+                  {loadingMessage ? "Submitting..." : "Send Message"}
                 </Button>
               </form>
             </div>

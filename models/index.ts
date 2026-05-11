@@ -61,6 +61,11 @@ function initRelations() {
     targetKey: "area_code",
     as: "destinationArea",
   });
+  Quotes.belongsTo(Customers, {
+    foreignKey: "customer_code",
+    targetKey: "customer_code",
+    as: "customerQuote",
+  });
 
   // TrackingHistory -> Quotes
   TrackingHistory.belongsTo(Quotes, {

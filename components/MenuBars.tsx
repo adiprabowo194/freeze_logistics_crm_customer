@@ -1,23 +1,12 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 function MenuBars() {
   const pathname = usePathname();
-  const router = useRouter();
-
   const [open, setOpen] = useState<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 🔥 indicator state
-  const [indicatorStyle, setIndicatorStyle] = useState({
-    left: 0,
-    width: 0,
-  });
-
-  // 🔥 FIX TYPE
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const menuRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   const menus = [
@@ -36,154 +25,132 @@ function MenuBars() {
       children: [
         { name: "All Jobs", href: "/jobs" },
         { name: "Booking Jobs", href: "/jobs/booking" },
-        { name: "Delivered Jobs", href: "/jobs/delivered" },
       ],
     },
     { name: "Invoices", href: "/invoices", icon: "ri-price-tag-3-line" },
     {
       name: "Profile",
       icon: "ri-account-circle-line",
-      children: [
-        { name: "Profile", href: "/profile" },
-        { name: "Change Password", href: "/profile/change-password" },
-      ],
+      children: [{ name: "Profile", href: "/profile" }],
     },
   ];
 
-  // 🔥 hover handler
-  const handleEnter = (name: string) => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setOpen(name);
-  };
-
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setOpen(null);
-    }, 150);
-  };
-
-  // 🔥 UPDATE INDICATOR
   useEffect(() => {
     menus.forEach((menu, index) => {
       const isActive =
-        menu.href === "/"
-          ? pathname === "/"
-          : menu.href && pathname.startsWith(menu.href);
-
-      const isChildActive =
-        menu.children && menu.children.some((c) => pathname.startsWith(c.href));
-
+        menu.href &&
+        (menu.href === "/" ? pathname === "/" : pathname.startsWith(menu.href));
+      const isChildActive = menu.children?.some((c) =>
+        pathname.startsWith(c.href),
+      );
       if (isActive || isChildActive) {
         const el = menuRefs.current[index];
         if (el) {
-          setIndicatorStyle({
-            left: el.offsetLeft,
-            width: el.offsetWidth,
-          });
+          setIndicatorStyle({ left: el.offsetLeft, width: el.offsetWidth });
         }
       }
     });
   }, [pathname]);
 
+  // Fungsi toggle khusus mobile
+  const handleToggle = (name: string) => {
+    setOpen(open === name ? null : name);
+  };
+
   return (
-    <div className="relative menuBar flex items-center px-8 border-b border-blue-400 bg-blue-600 text-white shadow-sm">
-      <ul className="relative text-sm px-8 flex items-center gap-4">
-        {/* 🔥 SLIDING INDICATOR */}
-        <span
-          className="absolute bottom-0 h-[3px] bg-yellow-300 transition-all duration-300 ease-in-out rounded-full"
-          style={{
-            left: indicatorStyle.left,
-            width: indicatorStyle.width,
-          }}
-        />
+    <div className="bg-blue-600 text-white border-b border-blue-400 sticky top-16 md:top-20 z-[100] shadow-sm">
+      <div className="max-w-[1600px] mx-auto overflow-x-auto md:overflow-visible no-scrollbar">
+        <ul className="flex items-start md:items-center min-w-max md:min-w-0 px-4 md:px-10 relative">
+          {/* SLIDING INDICATOR (Desktop Only) */}
+          {indicatorStyle.width > 0 && (
+            <span
+              className="absolute bottom-0 h-[3px] bg-yellow-300 transition-all duration-300 ease-in-out rounded-full hidden md:block"
+              style={indicatorStyle}
+            />
+          )}
 
-        {menus.map((menu, index) => {
-          const isActive =
-            menu.href === "/"
-              ? pathname === "/"
-              : menu.href && pathname.startsWith(menu.href);
+          {menus.map((menu, index) => {
+            const isChildActive = menu.children?.some((c) =>
+              pathname.startsWith(c.href),
+            );
+            const isActive =
+              menu.href &&
+              (menu.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(menu.href));
+            const isOpen = open === menu.name;
 
-          const isChildActive =
-            menu.children &&
-            menu.children.some((c) => pathname.startsWith(c.href));
-
-          // 🔥 MENU WITH CHILDREN
-          if (menu.children) {
             return (
               <li
                 key={menu.name}
                 ref={(el) => {
-                  menuRefs.current[index] = el; // ✅ FIX DI SINI
+                  menuRefs.current[index] = el;
                 }}
                 className="relative"
-                onMouseEnter={() => handleEnter(menu.name)}
-                onMouseLeave={handleLeave}
+                onMouseEnter={() =>
+                  window.innerWidth > 768 && menu.children && setOpen(menu.name)
+                }
+                onMouseLeave={() => window.innerWidth > 768 && setOpen(null)}
               >
-                <div
-                  className={`flex gap-2 px-4 py-3 w-[180px] justify-center items-center font-semibold cursor-pointer transition-all
-                  ${
-                    isChildActive ? "text-yellow-300" : "hover:text-yellow-300"
-                  }`}
-                >
-                  <i className={`${menu.icon} text-base`}></i>
-                  {menu.name}
-                  <i className="ri-arrow-down-s-line text-lg"></i>
-                </div>
-
-                {/* DROPDOWN */}
-                {open === menu.name && (
-                  <div className="absolute top-full left-0 w-[260px] bg-white text-gray-700 rounded-xl shadow-xl border z-50">
-                    <div className="h-2 bg-transparent"></div>
-
-                    <div className="overflow-hidden rounded-xl">
-                      {menu.children.map((child) => {
-                        const activeChild = pathname === child.href;
-
-                        return (
-                          <div
-                            key={child.name}
-                            onClick={() => router.push(child.href)}
-                            className={`px-6 py-4 text-sm cursor-pointer transition-all flex justify-between
-                              ${
-                                activeChild
-                                  ? "bg-blue-600 text-yellow-200 font-semibold"
-                                  : "bg-gray-100 hover:bg-blue-500 hover:text-white"
-                              }`}
-                          >
-                            {child.name}
-                            {activeChild && (
-                              <span className="w-2 h-2 bg-white rounded-full"></span>
-                            )}
-                          </div>
-                        );
-                      })}
+                {menu.children ? (
+                  <div className="flex flex-col md:block">
+                    {/* Parent Menu Item */}
+                    <div
+                      onClick={() => handleToggle(menu.name)}
+                      className={`flex gap-2 px-4 md:px-6 py-3 md:py-4 items-center font-semibold cursor-pointer whitespace-nowrap text-xs md:text-sm transition-colors ${
+                        isChildActive || isOpen
+                          ? "text-yellow-300"
+                          : "hover:text-yellow-100"
+                      }`}
+                    >
+                      <i className={`${menu.icon} text-base`}></i>
+                      {menu.name}
+                      <i
+                        className={`ri-arrow-down-s-line transition-transform ${isOpen ? "rotate-180" : ""}`}
+                      ></i>
                     </div>
+
+                    {/* DROPDOWN LOGIC */}
+                    {isOpen && (
+                      <div
+                        className="
+                        md:absolute md:top-full md:left-0 md:pt-2 md:w-52 md:z-[130] 
+                        relative w-full bg-blue-700 md:bg-transparent
+                      "
+                      >
+                        <div className="bg-white text-gray-800 md:rounded-xl shadow-2xl border-t md:border border-gray-100 overflow-hidden flex flex-col">
+                          {menu.children.map((child) => (
+                            <Link
+                              key={child.name}
+                              href={child.href}
+                              onClick={() => setOpen(null)}
+                              className={`block px-5 py-3 text-[11px] md:text-xs transition-all border-l-4 ${
+                                pathname === child.href
+                                  ? "bg-blue-50 border-blue-600 text-blue-600 font-bold"
+                                  : "bg-white border-transparent hover:bg-gray-50 hover:text-blue-600"
+                              }`}
+                            >
+                              {child.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <Link
+                    href={menu.href!}
+                    className={`flex gap-2 px-4 md:px-6 py-3 md:py-4 items-center font-semibold whitespace-nowrap text-xs md:text-sm transition-colors ${isActive ? "text-yellow-300" : "hover:text-yellow-100"}`}
+                  >
+                    <i className={`${menu.icon} text-base`}></i>
+                    {menu.name}
+                  </Link>
                 )}
               </li>
             );
-          }
-
-          // 🔥 MENU WITHOUT CHILDREN
-          return (
-            <li
-              key={menu.name}
-              ref={(el) => {
-                menuRefs.current[index] = el; // ✅ FIX DI SINI JUGA
-              }}
-            >
-              <Link
-                href={menu.href!}
-                className={`flex gap-2 px-4 py-3 w-[160px] justify-center items-center font-semibold transition-all
-                  ${isActive ? "text-yellow-300" : "hover:text-yellow-300"}`}
-              >
-                <i className={`${menu.icon} text-base`}></i>
-                {menu.name}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+          })}
+        </ul>
+      </div>
     </div>
   );
 }

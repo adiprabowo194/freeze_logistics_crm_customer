@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
         finalResults.push({
           rate_id: JSON.stringify(rateIdDetails),
           carrier_code: carrierInfo.carrier_code || "N/A",
+          carrier_image_path: carrierInfo.image_path || "N/A",
           name: carrierInfo.carrier_name || "Unknown",
           price: parseFloat((totalExclTax + totalTaxAmount).toFixed(2)),
           price_excl_tax: parseFloat(totalExclTax.toFixed(2)),

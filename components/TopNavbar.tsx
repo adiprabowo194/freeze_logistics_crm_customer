@@ -1,7 +1,5 @@
 "use client";
-
 import { useEffect, useState } from "react";
-
 import Logo from "./Logo";
 import LogoutButton from "./LogoutButton";
 
@@ -10,33 +8,33 @@ function TopNavbar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-      });
-
+      const res = await fetch("/api/auth/me", { credentials: "include" });
       if (!res.ok) return;
-
       const data = await res.json();
       setUser(data);
     };
-
     fetchUser();
   }, []);
 
   return (
-    <div>
-      {" "}
-      <div className="topNavbar flex justify-between items-center px-8 border-1 border-gray-300 bg-white">
-        <div className="w-1/2 px-6">
-          <Logo width={180} height={180} />
+    <div className="bg-white border-b border-gray-200 sticky top-0 z-[110]">
+      <div className="flex justify-between items-center px-4 md:px-14 h-16 md:h-20">
+        {/* LOGO - Ukuran otomatis mengecil di mobile */}
+        <div className="flex-shrink-0">
+          <Logo width={150} height={40} className="w-32 md:w-44 h-auto" />
         </div>
-        <div className="w-1/2 py-4 px-6 ">
-          <div className="flex justify-end items-center gap-4">
-            <span className="text-gray-500 text-xs/tight text-end">
-              Welcome , {user?.full_name || user?.username || "Guest"}
+
+        {/* USER INFO & LOGOUT */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden sm:flex flex-col items-end">
+            <span className="text-[10px] text-gray-400 uppercase leading-none">
+              Welcome
             </span>
-            <LogoutButton />
+            <span className="text-xs md:text-sm font-bold text-gray-700">
+              {user?.full_name || user?.username || "Guest"}
+            </span>
           </div>
+          <LogoutButton />
         </div>
       </div>
     </div>
