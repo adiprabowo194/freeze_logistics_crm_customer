@@ -212,12 +212,22 @@ export default function QuotesByStatusPage() {
               data.map((item: Quote) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border p-5 flex flex-col md:flex-row justify-between gap-4 md:items-start shadow-sm"
+                  className="group relative bg-white rounded-2xl border p-5 flex flex-col md:flex-row justify-between gap-4 md:items-start shadow-sm hover:shadow-md hover:border-blue-300 hover:-translate-y-1 transition-all duration-300"
                 >
+                  {/* 💡 TOOLTIP UTAMA (Muncul saat kartu di-hover) */}
+                  <div className="absolute -top-10 left-6 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 hidden md:block">
+                    <div className="bg-gray-800 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-xl flex items-center gap-2">
+                      <i className="ri-information-line text-blue-300"></i>
+                      Click for more details
+                    </div>
+                    {/* Segitiga Tooltip */}
+                    <div className="w-2 h-2 bg-gray-800 rotate-45 ml-4 -mt-1"></div>
+                  </div>
+
                   {/* LEFT: Info Identitas */}
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <div className="flex justify-between items-center md:block">
-                      <p className="font-bold text-blue-600 md:text-black">
+                      <p className="font-bold text-blue-600 md:text-black group-hover:text-blue-600 transition-colors">
                         {item.connote_no || "-"}
                       </p>
                       <span
@@ -231,6 +241,7 @@ export default function QuotesByStatusPage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-400">
+                      📅{" "}
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString()
                         : "-"}
@@ -242,9 +253,9 @@ export default function QuotesByStatusPage() {
                     </p>
                   </div>
 
-                  {/* MIDDLE: Detail Cargo - Grid di mobile */}
+                  {/* MIDDLE: Detail Cargo */}
                   <div className="grid grid-cols-2 md:block md:space-y-2 text-sm border-t md:border-0 pt-3 md:pt-0">
-                    <div>
+                    <div className="group/detail relative">
                       <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
                         Temp
                       </p>
@@ -254,7 +265,7 @@ export default function QuotesByStatusPage() {
                       <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
                         Unit
                       </p>
-                      <span className="text-blue-500 font-bold italic">
+                      <span className="text-blue-500 font-bold italic group-hover:underline transition-all">
                         {item.unit || "-"}
                       </span>
                     </div>
@@ -269,7 +280,7 @@ export default function QuotesByStatusPage() {
                   {/* RIGHT: Actions & Desktop Status */}
                   <div className="flex flex-row md:flex-col items-center md:items-end gap-3 border-t md:border-0 pt-4 md:pt-0">
                     <span
-                      className={`hidden md:block px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                      className={`hidden md:block px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${
                         item.status === "delivered"
                           ? "bg-green-100 text-green-600"
                           : item.status === "transit"
@@ -281,18 +292,31 @@ export default function QuotesByStatusPage() {
                     </span>
 
                     <div className="flex flex-row gap-2 w-full md:w-auto">
-                      <Link
-                        href={`/track-shipment/${item.connote_no}`}
-                        className="flex-1 md:flex-none border border-gray-300 px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-gray-50 transition"
-                      >
-                        Track
-                      </Link>
-                      <Link
-                        href={`/invoice/${item.connote_no}`}
-                        className="flex-1 md:flex-none bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-black transition"
-                      >
-                        Invoice
-                      </Link>
+                      {/* Tombol Track dengan Pop-up Kecil */}
+                      <div className="relative group/btn flex-1 md:flex-none">
+                        <Link
+                          href={`/track-shipment/${item.connote_no}`}
+                          className="block border border-blue-500 text-blue-500 px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95"
+                        >
+                          Track
+                        </Link>
+                        <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                          Check Status
+                        </span>
+                      </div>
+
+                      {/* Tombol Invoice dengan Pop-up Kecil */}
+                      <div className="relative group/btn flex-1 md:flex-none">
+                        <Link
+                          href={`/invoice/${item.connote_no}`}
+                          className="block bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-black transition-all shadow-sm active:scale-95"
+                        >
+                          Invoice
+                        </Link>
+                        <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
+                          View Billing
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
