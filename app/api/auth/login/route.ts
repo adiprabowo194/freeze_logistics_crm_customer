@@ -2,36 +2,34 @@ import { NextResponse } from "next/server";
 import "@/models";
 import bcrypt from "bcrypt";
 import { Users } from "@/models";
+import { Op } from "sequelize";
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
-
     const user = await Users.findOne({
-      where: { email },
+      where: {
+        email: email,
+        role_id: { [Op.in]: [2] },
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
+        { success: false, message: "Email or Password not found" },
+        { status: 401 },
       );
     }
 
-     const raw = user.get();
+    const raw = user.get();
 
     // ========================
-        // CEK PASSWORD
-        // ========================
-        const isMatch = await bcrypt.compare(password, raw.password || "");
-        
-    
+    // CEK PASSWORD
+    // ========================
+    const isMatch = await bcrypt.compare(password, raw.password || "");
 
     if (!isMatch) {
-      return NextResponse.json(
-        { error: "Wrong password" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Wrong password" }, { status: 401 });
     }
 
     // 🔥 FORMAT SESSION (rapih)
@@ -43,7 +41,7 @@ export async function POST(req: Request) {
     };
 
     const response = NextResponse.json({
-       success: true,
+      success: true,
       message: "Login success",
     });
 

@@ -128,7 +128,7 @@ export async function GET(req: Request) {
         {
           model: CoverageAreas,
           as: "originArea",
-          attributes: ["suburb", "state"],
+          attributes: ["suburb", "state", "postcode", "zone_type"],
           required: false,
         },
         {
@@ -140,7 +140,7 @@ export async function GET(req: Request) {
         {
           model: CoverageAreas,
           as: "destinationArea",
-          attributes: ["suburb", "state"],
+          attributes: ["suburb", "state", "postcode", "zone_type"],
           required: false,
         },
         {
@@ -159,7 +159,7 @@ export async function GET(req: Request) {
 
           // 🔥 ambil 1 saja untuk default dropdown
           separate: true,
-          limit: 1,
+          // limit: 1,
           order: [["createdAt", "DESC"]],
         },
       ],

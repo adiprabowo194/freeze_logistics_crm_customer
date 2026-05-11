@@ -39,7 +39,7 @@ export default function SelectSearch({ label, error, value, onChange }: Props) {
       const data: ApiItem[] = await res.json();
 
       return data.map((item) => ({
-        label: `${item.suburb}, ${item.postcode}`,
+        label: `${item.suburb}, ${item.state}, ${item.postcode}`,
         value: item.suburb,
         area_code: item.area_code,
         postcode: item.postcode,

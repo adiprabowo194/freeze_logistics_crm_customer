@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
         let unitExclTax = 0;
         let firstUnitPrice = 0;
         let nextUnitPrice = 0;
+        const unit_threshold = matchRate.unit_threshold ?? 1;
 
         // ============================================================
         // CHECK LOGIKA BOX & PALLET
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
           // Pallet: Rate = Base * (1 + Margin)
           firstUnitPrice = basePrice * (1 + marginPct);
 
-          if (qty > 1) {
+          if (qty > unit_threshold) {
             // Next price Pallet (Bensin): Rate * Fuel%
             nextUnitPrice = firstUnitPrice * fuelPct;
             unitExclTax = firstUnitPrice + (qty - 1) * nextUnitPrice;
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
           // First Unit: (19 * 1.55) * 1.05 = 30.92
           firstUnitPrice = basePrice * (1 + fuelPct) * (1 + marginPct);
 
-          if (qty > 1) {
+          if (qty > unit_threshold) {
             // Next Unit: (6 * 1.55) + (1 + 0.05) = 10.35
             nextUnitPrice = nextPriceBase * (1 + fuelPct) + (1 + marginPct);
             unitExclTax = firstUnitPrice + (qty - 1) * nextUnitPrice;
@@ -143,6 +144,7 @@ export async function POST(req: NextRequest) {
         finalResults.push({
           rate_id: JSON.stringify(rateIdDetails),
           carrier_code: carrierInfo.carrier_code || "N/A",
+          carrier_image_path: carrierInfo.image_path || "N/A",
           name: carrierInfo.carrier_name || "Unknown",
           price: parseFloat((totalExclTax + totalTaxAmount).toFixed(2)),
           price_excl_tax: parseFloat(totalExclTax.toFixed(2)),

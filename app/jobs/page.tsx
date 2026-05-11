@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import TopNavbar from "@/components/TopNavbar";
 import MenuBars from "@/components/MenuBars";
+import { exportToExcel } from "@/utils/exportToExcel";
 
 import useQuotes from "@/hooks/useQuotes";
 import useSummary from "@/hooks/useSummary";
@@ -37,6 +38,7 @@ export default function QuotesPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const debouncedSearch = useDebounce(search);
+  const [isExporting, setIsExporting] = useState(false);
   const [statusList, setStatusList] = useState<string[]>([
     "Booking",
     "Delivered",
@@ -61,6 +63,29 @@ export default function QuotesPage() {
     statusList,
   });
 
+  // 2. 🔥 Fungsi Export (Mengambil SEMUA data tanpa pagination)
+  const handleExportAll = async () => {
+    try {
+      setIsExporting(true); // Mulai loading
+      const response = await fetch(
+        `/api/quotes?search=${debouncedSearch}&limit=10000`,
+      );
+      const result = await response.json();
+      const allData = result.data || [];
+
+      if (allData.length > 0) {
+        await exportToExcel(allData, `Freeze_Logistics_All_Job`);
+      } else {
+        alert("No data available to export");
+      }
+    } catch (error) {
+      console.error("Export Error:", error);
+    } finally {
+      // Beri sedikit delay (misal 500ms) agar transisi UI lebih halus sebelum overlay hilang
+      setTimeout(() => setIsExporting(false), 500);
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <TopNavbar />
@@ -75,6 +100,23 @@ export default function QuotesPage() {
             <p className="text-gray-500 text-sm">
               View and manage all your shipments
             </p>
+          </div>
+          <div>
+            <button
+              onClick={handleExportAll}
+              disabled={isExporting || loading}
+              className={`${
+                isExporting ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+              } text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg active:scale-95`}
+            >
+              {isExporting ? (
+                <>
+                  <span className="animate-spin">🌀</span> Processing...
+                </>
+              ) : (
+                <>📥 Export All to Excel</>
+              )}
+            </button>
           </div>
           {/* 🔍 SEARCH */}
           <div>

@@ -24,12 +24,12 @@ export async function GET(
             {
               model: CoverageAreas,
               as: "originArea",
-              attributes: ["suburb", "state"],
+              attributes: ["suburb", "state", "postcode"],
             },
             {
               model: CoverageAreas,
               as: "destinationArea",
-              attributes: ["suburb", "state"],
+              attributes: ["suburb", "state", "postcode"],
             },
             {
               model: PackageDetails,
@@ -62,11 +62,11 @@ export async function GET(
       status: last.get("status"),
 
       origin: quote?.originArea
-        ? `${quote.originArea.suburb}, ${quote.originArea.state}`
+        ? `${quote.originArea.suburb}, ${quote.originArea.state}, ${quote.originArea.postcode}`
         : "-",
 
       destination: quote?.destinationArea
-        ? `${quote.destinationArea.suburb}, ${quote.destinationArea.state}`
+        ? `${quote.destinationArea.suburb}, ${quote.destinationArea.state}, ${quote.destinationArea.postcode}`
         : "-",
 
       // 🔥 ambil dari packageDetails

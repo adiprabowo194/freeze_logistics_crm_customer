@@ -135,7 +135,7 @@ export default function Page() {
                 name="companyName"
                 required={true}
               />
-              <InputField label="Abn" name="abn" type="text" required={true} />
+              <InputField label="ABN" name="abn" type="text" required={true} />
               <InputField
                 label="Contact Name"
                 name="contactName"

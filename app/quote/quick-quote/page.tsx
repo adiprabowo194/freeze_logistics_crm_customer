@@ -13,6 +13,7 @@ import Button from "@/components/Button";
 
 import { useRouter } from "next/navigation";
 export default function QuickQuotePage() {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [step, setStep] = useState(1);
   // ================= TYPE =================
@@ -41,8 +42,6 @@ export default function QuickQuotePage() {
   const [pickupDate, setPickupDate] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [cargos, setCargos] = useState([]);
-
   // ================= AUTO LOAD CUSTOMER =================
   useEffect(() => {
     const fetchCustomer = async () => {
@@ -53,7 +52,7 @@ export default function QuickQuotePage() {
         // ✅ FIX: pakai field yang benar
         if (data?.pickup_suburb_code) {
           setPickupSuburb({
-            label: `${data.pickup_suburb_name}, ${data.postcode}`, // tampil
+            label: `${data.pickup_suburb_name}, ${data.state}, ${data.postcode}`, // tampil
             value: data.pickup_suburb_code, // value harus code
             area_code: data.pickup_suburb_code,
             postcode: data.postcode,
@@ -239,6 +238,7 @@ export default function QuickQuotePage() {
   // ================= SUBMIT =================
   const handleSubmit = async (status: "Entry" | "Booking") => {
     try {
+      setLoading(true);
       if (step === 2 && !selectedCarrier) {
         return toast.error("Please select carrier");
       }
@@ -317,6 +317,8 @@ export default function QuickQuotePage() {
       }, 800);
     } catch (err: any) {
       toast.error(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -324,7 +326,13 @@ export default function QuickQuotePage() {
   const getTomorrowDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split("T")[0];
+
+    const year = tomorrow.getFullYear();
+    // Menambahkan 1 karena bulan dimulai dari 0, lalu padStart agar jadi 2 digit
+    const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const day = String(tomorrow.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
   };
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -332,7 +340,7 @@ export default function QuickQuotePage() {
       <MenuBars />
       <Toaster position="top-right" />
 
-      <div className="p-6 px-16">
+      <div className="p-6 px-8 md:px-16">
         <h1 className="text-2xl font-bold mb-6">Quick Quote</h1>
 
         {/* STEP */}
@@ -379,7 +387,7 @@ export default function QuickQuotePage() {
                   onClick={handleAddCargo}
                   className="bg-yellow-400 text-white px-3 py-1 rounded-lg"
                 >
-                  + Add List
+                  + Add Item
                 </button>
               </div>
 
@@ -413,6 +421,7 @@ export default function QuickQuotePage() {
 
                   <div className="grid grid-cols-2 gap-2 md:col-span-2">
                     <InputField
+                      type="number"
                       label="Qty *"
                       name="qty"
                       value={cargo.qty}
@@ -421,6 +430,7 @@ export default function QuickQuotePage() {
                       }
                     />
                     <InputField
+                      type="number"
                       name="weight"
                       label="Weight (kg)*"
                       value={cargo.weight}
@@ -432,24 +442,27 @@ export default function QuickQuotePage() {
 
                   <div className="grid grid-cols-3 gap-2 md:col-span-2">
                     <InputField
+                      type="number"
                       name="length"
-                      label="Length (cm)*"
+                      label="Length (cm) *"
                       value={cargo.length}
                       onChange={(e) =>
                         handleChange(index, "length", e.target.value)
                       }
                     />
                     <InputField
+                      type="number"
                       name="width"
-                      label="Width (cm)*"
+                      label="Width (cm) *"
                       value={cargo.width}
                       onChange={(e) =>
                         handleChange(index, "width", e.target.value)
                       }
                     />
                     <InputField
+                      type="number"
                       name="height"
-                      label="Height (cm)*"
+                      label="Height (cm) *"
                       value={cargo.height}
                       onChange={(e) =>
                         handleChange(index, "height", e.target.value)
@@ -479,9 +492,6 @@ export default function QuickQuotePage() {
               <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">
                 Available Carriers
               </h2>
-              <span className="text-xs text-gray-400">
-                Prices include fuel surcharge & PPN
-              </span>
             </div>
 
             {loadingCarrier ? (
@@ -538,12 +548,18 @@ export default function QuickQuotePage() {
                       <div className="flex items-center gap-6 w-full md:w-[40%]">
                         <div className="w-20 h-14 bg-white rounded-lg flex items-center justify-center p-2 shadow-sm border border-gray-50">
                           <img
-                            src={`/assets/carrier_logo/${c.carrier_code}.webp`}
+                            // Menggabungkan Base URL dengan path yang datang dari API
+                            src={`https://admin.freezelogistics.com.au/${c.carrier_image_path}`}
                             alt={c.name}
                             className="object-contain max-h-full w-full"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "/assets/carrier_logo/default.webp";
+                              const target = e.target as HTMLImageElement;
+                              const defaultSrc = `https://admin.freezelogistics.com.au/assets/carrier_logo/default.webp`;
+
+                              // Fallback ke logo default jika image_path tidak ditemukan
+                              if (target.src !== defaultSrc) {
+                                target.src = defaultSrc;
+                              }
                             }}
                           />
                         </div>
@@ -595,6 +611,7 @@ export default function QuickQuotePage() {
                           <p className="text-sm font-black text-gray-900">
                             {c.pickup_eta} Days
                           </p>
+                          {/* <span>{`https://admin.freezelogistics.com.au${c.carrier_image_path}`}</span> */}
                         </div>
 
                         <div className="flex flex-col items-center flex-1 max-w-[180px]">
@@ -795,7 +812,7 @@ export default function QuickQuotePage() {
                 <div className="flex items-center gap-4 w-full md:w-[30%] space-x-4">
                   <div className="space-x-2 w-34 bg-white rounded-xl flex items-center justify-center p-2 shadow-sm border border-gray-100 shrink-0">
                     <img
-                      src={`/assets/carrier_logo/${selectedCarrier?.carrier_code}.webp`}
+                      src={`https://admin.freezelogistics.com.au/${selectedCarrier?.carrier_image_path}`}
                       alt={selectedCarrier?.name}
                       className="object-contain max-h-full w-full"
                       onError={(e) => {
@@ -944,9 +961,10 @@ export default function QuickQuotePage() {
               {/* RIGHT */}
               <Button
                 onClick={() => handleSubmit("Booking")}
+                disabled={loading}
                 className="bg-blue-400 hover:bg-blue-500 text-black px-12 py-3 rounded-lg text-base"
               >
-                Submit Quote
+                {loading ? "Submitting..." : "Book Now"}
               </Button>
             </div>
           )}
