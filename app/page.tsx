@@ -13,6 +13,7 @@ const Home: React.FC = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -77,14 +78,27 @@ const Home: React.FC = () => {
             required
           />
 
-          <InputField
-            label="Password"
-            name="password"
-            type="password"
-            placeholder="Enter your password"
-            required
-          />
+          <div className="relative w-full">
+            <InputField
+              label="Password"
+              name="password"
+              // Ganti type secara dinamis berdasarkan state
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              required
+            />
 
+            {/* Icon Mata */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-[32px] text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <i
+                className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}
+              ></i>
+            </button>
+          </div>
           <Button type="submit" disabled={loading}>
             {loading ? "Loading..." : "Login"}
           </Button>

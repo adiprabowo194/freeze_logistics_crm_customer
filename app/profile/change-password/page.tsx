@@ -72,76 +72,105 @@ export default function ChangePasswordPage() {
       <TopNavbar />
       <MenuBars />
 
-      <div className="p-6 px-16">
-        <div className="px-6 space-y-6">
-          <h1 className="text-2xl font-bold mb-6">Change Password</h1>
+      {/* Container utama: Padding p-4 di mobile agar tidak mepet */}
+      <div className="p-4 md:p-6 lg:px-16 max-w-[1400px] mx-auto">
+        <div className="md:px-6 space-y-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+            Change Password
+          </h1>
 
-          <div className="bg-white p-6 rounded-xl border max-w-xl space-y-4">
+          {/* Card: max-w-xl tetap dijaga agar input tidak terlalu lebar di desktop */}
+          <div className="bg-white p-5 md:p-8 rounded-2xl border shadow-sm max-w-xl space-y-5">
             {/* CURRENT PASSWORD */}
-            <div>
-              <label className="text-sm text-gray-600">Current Password</label>
-              <div className="flex">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                Current Password
+              </label>
+              <div className="flex group">
                 <input
                   type={showCurrent ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="p-3 border rounded-l-xl w-full"
+                  placeholder="••••••••"
+                  className="p-3 border rounded-l-xl w-full focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all shadow-sm"
                 />
                 <button
+                  type="button"
                   onClick={() => setShowCurrent(!showCurrent)}
-                  className="px-3 border border-l-0 rounded-r-xl bg-gray-100"
+                  className="px-4 border border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
                 >
-                  👁
+                  {showCurrent ? "🙈" : "👁"}
                 </button>
               </div>
             </div>
 
             {/* NEW PASSWORD */}
-            <div>
-              <label className="text-sm text-gray-600">New Password</label>
-              <div className="flex">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                New Password
+              </label>
+              <div className="flex group">
                 <input
                   type={showNew ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="p-3 border rounded-l-xl w-full"
+                  placeholder="••••••••"
+                  className="p-3 border rounded-l-xl w-full focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all shadow-sm"
                 />
                 <button
+                  type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="px-3 border border-l-0 rounded-r-xl bg-gray-100"
+                  className="px-4 border border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
                 >
-                  👁
+                  {showNew ? "🙈" : "👁"}
                 </button>
               </div>
             </div>
 
             {/* CONFIRM PASSWORD */}
-            <div>
-              <label className="text-sm text-gray-600">Confirm Password</label>
-              <div className="flex">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                Confirm Password
+              </label>
+              <div className="flex group">
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="p-3 border rounded-l-xl w-full"
+                  placeholder="••••••••"
+                  className="p-3 border rounded-l-xl w-full focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all shadow-sm"
                 />
                 <button
+                  type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="px-3 border border-l-0 rounded-r-xl bg-gray-100"
+                  className="px-4 border border-l-0 rounded-r-xl bg-gray-50 hover:bg-gray-100 text-gray-500 transition-colors"
                 >
-                  👁
+                  {showConfirm ? "🙈" : "👁"}
                 </button>
               </div>
             </div>
 
-            {/* BUTTON */}
-            <button
-              onClick={handleChangePassword}
-              disabled={loading}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl w-full disabled:opacity-50"
-            >
-              {loading ? "Saving..." : "Update Password"}
-            </button>
+            {/* BUTTON: Margin top ditambahkan agar ada jarak dari input terakhir */}
+            <div className="pt-2">
+              <button
+                onClick={handleChangePassword}
+                disabled={loading}
+                className={`w-full bg-blue-600 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-100 transition-all active:scale-95 flex justify-center items-center gap-2 ${
+                  loading
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:bg-blue-700"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "Update Password"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
