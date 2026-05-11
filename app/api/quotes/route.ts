@@ -134,7 +134,7 @@ export async function GET(req: Request) {
         {
           model: Carriers,
           as: "carrierDetail",
-          attributes: ["carrier_name", "carrier_code"],
+          attributes: ["carrier_name", "carrier_code", "image_path"],
           required: false,
         },
         {

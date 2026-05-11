@@ -5,6 +5,11 @@ import { useEffect, useState } from "react";
 interface Quote {
   id: number;
   connote_no: string;
+  carrierDetail: {
+    carrier_name?: string;
+    carrier_code?: string;
+    image_path?: string;
+  };
   cbm: string;
   originArea?: {
     suburb?: string;

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/sequelize";
-import Quotes from "@/models/Quotes";
+// ❌ JANGAN IMPORT LANGSUNG: import Quotes from "@/models/Quotes";
+// ✅ IMPORT DARI INDEX MODELS (Agar initRelations() dijalankan)
+import { Quotes } from "@/models";
 import { Op } from "sequelize";
 import { getSessionUser } from "@/lib/auth";
 
@@ -8,76 +10,36 @@ export async function GET(req: Request) {
   try {
     await connectDB();
 
-    // cek session
-    // ================= SESSION =================
     const user = await getSessionUser();
-
-    if (!user) {
+    if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const customerCode = user.customer_code;
-
     if (!customerCode) {
       return NextResponse.json(
-        { error: "customer_code not found in session" },
+        { error: "customer_code not found" },
         { status: 400 },
       );
     }
 
     const { searchParams } = new URL(req.url);
-
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
-    const status = searchParams.get("status") || "";
     const search = searchParams.get("search") || "";
 
-    const where: any = {
-      customer_code: customerCode, // 🔥 WAJIB FILTER
-    };
+    // 1. Bangun Object Where
+    const where: any = { customer_code: customerCode };
 
-    // 🔍 SEARCH
+    // 🔍 Search Filter (Membutuhkan Relasi originArea & destinationArea)
     if (search) {
       where[Op.or] = [
         { connote_no: { [Op.like]: `%${search}%` } },
-
-        // 🔥 JOIN originArea
         { "$originArea.suburb$": { [Op.like]: `%${search}%` } },
-
-        // 🔥 JOIN destinationArea
         { "$destinationArea.suburb$": { [Op.like]: `%${search}%` } },
       ];
     }
 
-    // 📌 STATUS
-    const statusList = searchParams.get("statusList");
-    if (statusList && !status) {
-      where.status = {
-        [Op.in]: statusList.split(","),
-      };
-    } else if (status) {
-      if (status === "onprocess") {
-        where.status = {
-          [Op.in]: ["booking", "transit", "approve"],
-        };
-      } else if (status === "confirm") {
-        where.status = {
-          [Op.in]: ["approve"],
-        };
-      } else if (status === "transit") {
-        where.status = {
-          [Op.in]: ["transit"],
-        };
-      } else if (status === "booking") {
-        where.status = {
-          [Op.in]: ["booking"],
-        };
-      } else {
-        where.status = status;
-      }
-    }
-
-    // 📅 DATE
+    // 📅 Date Filter
     if (startDate && endDate) {
       where.createdAt = {
         [Op.between]: [
@@ -87,29 +49,33 @@ export async function GET(req: Request) {
       };
     }
 
-    // 🔥 SUMMARY (pakai where yg sama)
-    const total = await Quotes.count({
-      where: {
-        ...where,
-        status: "booking",
-      },
-    });
+    // 🔗 Definisi Include (Wajib agar alias originArea & destinationArea dikenali)
+    const include = [
+      { association: "originArea", attributes: [] },
+      { association: "destinationArea", attributes: [] },
+    ];
 
-    const delivered = await Quotes.count({
-      where: {
-        ...where,
-        status: "delivered", // ⚠️ sesuaikan DB
-      },
-    });
-
-    const onprocess = await Quotes.count({
-      where: {
-        ...where,
-        status: {
-          [Op.in]: ["booking", "transit", "approve"],
+    // 🚀 Execute Counts secara paralel
+    const [total, delivered, onprocess] = await Promise.all([
+      Quotes.count({
+        where: { ...where, status: "booking" },
+        include,
+        distinct: true,
+      }),
+      Quotes.count({
+        where: { ...where, status: "delivered" },
+        include,
+        distinct: true,
+      }),
+      Quotes.count({
+        where: {
+          ...where,
+          status: { [Op.in]: ["booking", "transit", "approve"] },
         },
-      },
-    });
+        include,
+        distinct: true,
+      }),
+    ]);
 
     return NextResponse.json({
       active: total,
@@ -118,7 +84,6 @@ export async function GET(req: Request) {
     });
   } catch (error: any) {
     console.error("Summary API Error:", error);
-
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
