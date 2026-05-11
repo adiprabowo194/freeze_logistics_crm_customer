@@ -6,6 +6,7 @@ import toast, { Toaster } from "react-hot-toast";
 import Logo from "@/components/Logo";
 
 export default function ResetPasswordPage() {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { token } = useParams();
   const searchParams = useSearchParams();
@@ -55,14 +56,12 @@ export default function ResetPasswordPage() {
   };
 
   // Komponen Wrapper untuk menjaga konsistensi UI
-  const StatusWrapper = ({ children }) => (
+  const StatusWrapper = ({ children }: { children: React.ReactNode }) => (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-[400px] text-center space-y-6">
-        <img
-          src="https://www.freezelogistics.com.au/wp-content/uploads/2022/07/logo.png"
-          alt="Logo"
-          className="h-12 mx-auto object-contain mb-4"
-        />
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-[400px] text-center space-y-6 iten">
+        <div className="flex justify-center">
+          <Logo />
+        </div>
         {children}
       </div>
     </div>
@@ -84,21 +83,21 @@ export default function ResetPasswordPage() {
       <StatusWrapper>
         <div className="space-y-4">
           <div className="text-red-500 text-5xl">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-800">Token Tidak Valid</h2>
+          <h2 className="text-xl font-bold text-gray-800">Invalid Token</h2>
           <p className="text-sm text-gray-500">
-            Link reset password mungkin sudah kadaluwarsa atau tidak sah.
+            The password reset link may have expired or is no longer valid.
           </p>
           <button
             onClick={() => router.push("/forgot-password")}
             className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold"
           >
-            Minta Link Baru
+            Request New Link
           </button>
           <a
             href="/login"
             className="block text-sm text-blue-600 hover:underline"
           >
-            Kembali ke Login
+            Back to Login
           </a>
         </div>
       </StatusWrapper>
@@ -115,19 +114,30 @@ export default function ResetPasswordPage() {
 
         <div className="text-center">
           <h1 className="text-xl font-bold text-gray-800">Reset Password</h1>
-          <p className="text-sm text-gray-500">
-            Silakan masukkan password baru Anda
-          </p>
+          <p className="text-sm text-gray-500">Please Type New Password</p>
         </div>
 
         <div className="space-y-4">
-          <input
-            type="password"
-            placeholder="Password baru"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password baru"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            {/* Icon Mata */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-[32px] text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <i
+                className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}
+              ></i>
+            </button>
+          </div>
 
           <button
             onClick={handleReset}
