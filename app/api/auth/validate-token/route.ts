@@ -5,6 +5,7 @@ import { Users } from "@/models";
 export async function POST(req: Request) {
   const { token, email } = await req.json();
 
+  console.log([token, email]);
   const user = await Users.findOne({
     where: {
       email,

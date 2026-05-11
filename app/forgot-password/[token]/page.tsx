@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation"; // Tambahkan useRouter
 import toast, { Toaster } from "react-hot-toast";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const { token } = useParams();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
@@ -63,6 +64,11 @@ export default function ResetPasswordPage() {
     if (!res.ok) return toast.error(data.error);
 
     toast.success("Password berhasil diubah");
+
+    // Redirect ke halaman login setelah 2 detik
+    setTimeout(() => {
+      router.push("/login"); // atau "/" sesuai keinginan Anda
+    }, 2000);
   };
 
   if (loading) return <div>Loading...</div>;
