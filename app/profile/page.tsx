@@ -171,10 +171,14 @@ export default function ProfileSettingsPage() {
       <MenuBars />
       <Toaster position="top-right" />
 
-      <div className="p-6 px-16 ">
+      {/* Container utama: p-4 di mobile, lg:px-16 di desktop */}
+      <div className="p-4 md:p-6 lg:px-16 max-w-[1400px] mx-auto">
+        {/* Alert Responsive */}
         {showAlert && (
-          <div className="mx-6 mb-4 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm">
-            <span>✅ Congratulation ! profile have been change.</span>
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 shadow-sm transition-all">
+            <span className="flex-1">
+              ✅ profile has been changed successfully.
+            </span>
             <button
               onClick={() => setShowAlert(false)}
               className="ml-4 text-green-600 hover:text-green-800"
@@ -183,101 +187,145 @@ export default function ProfileSettingsPage() {
             </button>
           </div>
         )}
-        <div className="px-6 space-y-6">
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
 
-          {/* PERSONAL */}
-          <div className="bg-white p-6 rounded-xl border grid md:grid-cols-3 gap-4">
-            <div className="flex flex-col">
-              <label htmlFor="">Pic Name * :</label>
+        <div className="space-y-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+            Profile Settings
+          </h1>
+
+          {/* PERSONAL SECTION */}
+          <div className="bg-white p-5 md:p-6 rounded-2xl border shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                Pic Name *
+              </label>
               <input
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Full Name"
-                className="p-3 border rounded-xl"
+                className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all"
               />
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="">Email * :</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                Email *
+              </label>
               <input
                 value={email}
                 disabled
-                className="p-3 border rounded-xl bg-gray-300"
+                className="p-3 border rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed"
               />
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="">Pic Phone * :</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-semibold text-gray-600">
+                Pic Phone *
+              </label>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Phone"
-                className="p-3 border rounded-xl"
+                className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all"
               />
             </div>
           </div>
 
-          {/* COMPANY */}
-          <div className="bg-white p-6 rounded-xl border space-y-4">
-            <h1 className="text-lg font-semibold">Company Detail</h1>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="flex flex-col">
-                <label htmlFor="">Company Name * :</label>
+          {/* COMPANY SECTION */}
+          <div className="bg-white p-5 md:p-6 rounded-2xl border shadow-sm space-y-6">
+            <h2 className="text-lg font-bold text-gray-800 border-b pb-2">
+              Company Detail
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-600">
+                  Company Name *
+                </label>
                 <input
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="Company Name"
-                  className="p-3 border rounded-xl"
+                  className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all"
                 />
               </div>
 
-              <div className="flex flex-col">
-                <label htmlFor="">Company Phone * :</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-600">
+                  Company Phone *
+                </label>
                 <input
                   value={phoneCompany}
                   onChange={(e) => setPhoneCompany(e.target.value)}
                   placeholder="Company Phone"
-                  className="p-3 border rounded-xl"
+                  className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all"
                 />
               </div>
-              <div className="flex flex-col">
-                <label htmlFor="">Website :</label>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-600">
+                  Website
+                </label>
                 <input
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="Website"
-                  className="p-3 border rounded-xl"
+                  className="p-3 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all"
                 />
               </div>
             </div>
 
-            {addresses.map((addr) => (
-              <div key={addr.id} className="border p-4 rounded-xl">
-                <SelectSearch
-                  label={addr.id === 1 ? "Pickup Area *" : "Office Area *"}
-                  value={addr.area || undefined}
-                  onChange={(val) => handleAddressChange(addr.id, "area", val)}
-                />
-
-                <input
-                  value={addr.address}
-                  onChange={(e) =>
-                    handleAddressChange(addr.id, "address", e.target.value)
-                  }
-                  className="border p-2 rounded-lg w-full mt-2"
-                />
-              </div>
-            ))}
+            {/* ADDRESS SECTION: Menggunakan grid 2 kolom di desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+              {addresses.map((addr) => (
+                <div
+                  key={addr.id}
+                  className="border bg-gray-50/50 p-4 rounded-2xl space-y-3"
+                >
+                  <div className="bg-white rounded-lg">
+                    <SelectSearch
+                      label={
+                        addr.id === 1 ? "Pickup Suburb *" : "Office Suburb *"
+                      }
+                      value={addr.area || undefined}
+                      onChange={(val) =>
+                        handleAddressChange(addr.id, "area", val)
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase">
+                      Full Address
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={addr.address}
+                      onChange={(e) =>
+                        handleAddressChange(addr.id, "address", e.target.value)
+                      }
+                      placeholder="Street name, No, etc."
+                      className="border p-3 rounded-xl w-full bg-white focus:ring-2 focus:ring-blue-400 outline-none transition-all text-sm"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={loading || loadingFetch}
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl"
-          >
-            {loading ? "Saving..." : "Save"}
-          </button>
+          {/* ACTION BUTTON */}
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={handleSave}
+              disabled={loading || loadingFetch}
+              className={`w-full md:w-auto px-10 py-3.5 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95 ${
+                loading || loadingFetch
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 shadow-blue-200"
+              }`}
+            >
+              {loading ? "Saving..." : "Save Profile"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

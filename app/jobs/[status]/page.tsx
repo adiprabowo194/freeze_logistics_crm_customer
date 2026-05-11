@@ -101,8 +101,8 @@ export default function QuotesByStatusPage() {
   return (
     <div className="relative bg-gray-50 min-h-screen">
       {isExporting && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 animate-in fade-in zoom-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white p-6 md:p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 animate-in fade-in zoom-in duration-300 w-full max-w-xs md:max-w-sm">
             <div className="relative">
               <div className="h-16 w-16 rounded-full border-4 border-gray-200"></div>
               <div className="absolute top-0 h-16 w-16 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
@@ -121,35 +121,42 @@ export default function QuotesByStatusPage() {
       <TopNavbar />
       <MenuBars />
 
-      <div className="p-6 px-16">
-        <div className="space-y-6 px-8">
-          {/* 🔹 TITLE */}
-          <div>
-            <h1 className="text-2xl font-bold capitalize">
-              {statusParam} Quotes
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Filtered by status: {statusParam}
-            </p>
+      {/* Container: Padding disesuaikan (p-4 di mobile, lg:px-16 di desktop) */}
+      <div className="p-4 md:p-6 lg:px-16 max-w-[1400px] mx-auto">
+        <div className="space-y-6 md:px-8">
+          {/* 🔹 TITLE & BUTTON - Stack vertikal di mobile */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold capitalize">
+                {statusParam} Quotes
+              </h1>
+              <p className="text-gray-500 text-sm">
+                Filtered by status: {statusParam}
+              </p>
+            </div>
+
+            {statusParam === "booking" && (
+              <button
+                onClick={handleExportAll}
+                disabled={isExporting || loading}
+                className={`${
+                  isExporting
+                    ? "bg-gray-400"
+                    : "bg-green-600 hover:bg-green-700"
+                } text-white px-6 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 w-full md:w-auto`}
+              >
+                {isExporting ? (
+                  <>
+                    {" "}
+                    <span className="animate-spin">🌀</span> Processing...{" "}
+                  </>
+                ) : (
+                  <>📥 Export All to Excel</>
+                )}
+              </button>
+            )}
           </div>
-          {/* Tombol hanya muncul jika status == booking */}
-          {statusParam === "booking" && (
-            <button
-              onClick={handleExportAll}
-              disabled={isExporting || loading}
-              className={`${
-                isExporting ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
-              } text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg active:scale-95`}
-            >
-              {isExporting ? (
-                <>
-                  <span className="animate-spin">🌀</span> Processing...
-                </>
-              ) : (
-                <>📥 Export All to Excel</>
-              )}
-            </button>
-          )}
+
           {/* 🔍 SEARCH */}
           <div>
             <input
@@ -159,74 +166,110 @@ export default function QuotesByStatusPage() {
                 setPage(1);
               }}
               placeholder="Search by connote / route..."
-              className="w-full px-4 py-3 rounded-xl border bg-gray-100 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-4 py-3 rounded-xl border bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 shadow-sm"
             />
           </div>
-          {/* 📊 SUMMARY */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border p-5 text-center">
-              <p className="text-gray-500 text-sm">Total</p>
-              <p className="text-xl font-bold">{active}</p>
+
+          {/* 📊 SUMMARY - 2 Kolom di mobile agar tidak terlalu kecil */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <div className="bg-white rounded-2xl border p-4 text-center shadow-sm">
+              <p className="text-gray-500 text-[10px] md:text-sm uppercase font-bold tracking-wider">
+                Total
+              </p>
+              <p className="text-lg md:text-xl font-bold">{active}</p>
             </div>
 
-            <div className="bg-white rounded-2xl border p-5 text-center">
-              <p className="text-gray-500 text-sm">On Process</p>
-              <p className="text-xl font-bold text-yellow-500">{onprocess}</p>
+            <div className="bg-white rounded-2xl border p-4 text-center shadow-sm">
+              <p className="text-gray-500 text-[10px] md:text-sm uppercase font-bold tracking-wider">
+                On Process
+              </p>
+              <p className="text-lg md:text-xl font-bold text-yellow-500">
+                {onprocess}
+              </p>
             </div>
 
-            <div className="bg-white rounded-2xl border p-5 text-center">
-              <p className="text-gray-500 text-sm">Delivered</p>
-              <p className="text-xl font-bold text-green-500">{delivered}</p>
+            <div className="bg-white rounded-2xl border p-4 text-center shadow-sm col-span-2 md:col-span-1">
+              <p className="text-gray-500 text-[10px] md:text-sm uppercase font-bold tracking-wider">
+                Delivered
+              </p>
+              <p className="text-lg md:text-xl font-bold text-green-500">
+                {delivered}
+              </p>
             </div>
           </div>
-          {/* 📦 LIST */}
+
+          {/* 📦 LIST - Diubah menjadi flex-col pada mobile */}
           <div className="space-y-4">
             {loading ? (
-              <p className="text-gray-400 text-sm">Loading...</p>
+              <p className="text-gray-400 text-sm text-center py-10">
+                Loading...
+              </p>
             ) : data.length === 0 ? (
-              <p className="text-gray-400 text-sm">No data found</p>
+              <div className="bg-white rounded-2xl border p-10 text-center text-gray-400 text-sm">
+                No data found
+              </div>
             ) : (
               data.map((item: Quote) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border p-5 flex justify-between items-start"
+                  className="bg-white rounded-2xl border p-5 flex flex-col md:flex-row justify-between gap-4 md:items-start shadow-sm"
                 >
-                  {/* LEFT */}
-                  <div className="space-y-2">
-                    <p className="font-semibold">{item.connote_no || "-"}</p>
-                    <p className="text-sm text-gray-500">
+                  {/* LEFT: Info Identitas */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center md:block">
+                      <p className="font-bold text-blue-600 md:text-black">
+                        {item.connote_no || "-"}
+                      </p>
+                      <span
+                        className={`md:hidden px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          item.status === "delivered"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-yellow-100 text-yellow-600"
+                        }`}
+                      >
+                        {item.status || "-"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400">
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString()
                         : "-"}
                     </p>
-
-                    <p className="text-sm">
-                      📍 {item.originArea?.suburb || "-"} →{" "}
+                    <p className="text-sm font-medium pt-1">
+                      📍 {item.originArea?.suburb || "-"}{" "}
+                      <span className="text-gray-400 px-1">→</span>{" "}
                       {item.destinationArea?.suburb || "-"}
                     </p>
                   </div>
 
-                  {/* MIDDLE */}
-                  <div className="space-y-2 text-sm">
-                    <p>Temperature: {item.temperature || "-"}</p>
-                    <p>
-                      Unit:{" "}
-                      <span className="text-blue-400 bg-blue-100 px-2 py-1 rounded-xl">
+                  {/* MIDDLE: Detail Cargo - Grid di mobile */}
+                  <div className="grid grid-cols-2 md:block md:space-y-2 text-sm border-t md:border-0 pt-3 md:pt-0">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
+                        Temp
+                      </p>
+                      <p className="text-gray-600">{item.temperature || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold md:hidden">
+                        Unit
+                      </p>
+                      <span className="text-blue-500 font-bold italic">
                         {item.unit || "-"}
                       </span>
-                    </p>
+                    </div>
                   </div>
 
-                  {/* MIDDLE */}
-                  <div className="text-sm space-y-1">
-                    <p>📦 {item.weight || 0} kg</p>
-                    <p>Qty: {item.qty || 0}</p>
+                  {/* MIDDLE: Weight & Qty */}
+                  <div className="grid grid-cols-2 md:block text-sm md:space-y-1">
+                    <p className="font-medium">📦 {item.weight || 0} kg</p>
+                    <p className="text-gray-500">Qty: {item.qty || 0}</p>
                   </div>
 
-                  {/* RIGHT */}
-                  <div className="flex flex-col items-end gap-2">
+                  {/* RIGHT: Actions & Desktop Status */}
+                  <div className="flex flex-row md:flex-col items-center md:items-end gap-3 border-t md:border-0 pt-4 md:pt-0">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs ${
+                      className={`hidden md:block px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
                         item.status === "delivered"
                           ? "bg-green-100 text-green-600"
                           : item.status === "transit"
@@ -237,16 +280,16 @@ export default function QuotesByStatusPage() {
                       {item.status || "-"}
                     </span>
 
-                    <div className="flex flex-col gap-2 text-center">
+                    <div className="flex flex-row gap-2 w-full md:w-auto">
                       <Link
                         href={`/track-shipment/${item.connote_no}`}
-                        className="border px-4 py-1 rounded-lg text-sm hover:bg-gray-100 transition"
+                        className="flex-1 md:flex-none border border-gray-300 px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-gray-50 transition"
                       >
                         Track
                       </Link>
                       <Link
                         href={`/invoice/${item.connote_no}`}
-                        className="border px-4 py-1 rounded-lg text-sm hover:bg-gray-100 transition"
+                        className="flex-1 md:flex-none bg-gray-800 text-white px-4 py-2 rounded-lg text-xs font-bold text-center hover:bg-black transition"
                       >
                         Invoice
                       </Link>
@@ -256,27 +299,32 @@ export default function QuotesByStatusPage() {
               ))
             )}
           </div>
-          <div className="flex items-center justify-between relative">
-            {/* select option mengatur limit  */}
-            {/* 🔹 LIMIT SELECT */}
-            <div className="flex items-center gap-2 top-2 relative">
+
+          {/* 🔹 FOOTER (Limit & Pagination) */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
+            <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Show</span>
               <select
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
-                  setPage(1); // 🔥 reset page
+                  setPage(1);
                 }}
-                className="border rounded-lg px-2 py-1 text-sm"
+                className="border rounded-lg px-2 py-1 text-sm bg-white"
               >
-                <option value={limit}>{limit}</option>
+                <option value={10}>10</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
-                <option value={500}>500</option>
               </select>
               <span className="text-sm text-gray-500">entries</span>
             </div>
-            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+            <div className="w-full md:w-auto overflow-x-auto flex justify-center">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+              />
+            </div>
           </div>
         </div>
       </div>

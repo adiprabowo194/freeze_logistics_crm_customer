@@ -25,13 +25,17 @@ function MenuBars() {
       children: [
         { name: "All Jobs", href: "/jobs" },
         { name: "Booking Jobs", href: "/jobs/booking" },
+        { name: "Delivered Jobs", href: "/jobs/delivered" },
       ],
     },
     { name: "Invoices", href: "/invoices", icon: "ri-price-tag-3-line" },
     {
       name: "Profile",
       icon: "ri-account-circle-line",
-      children: [{ name: "Profile", href: "/profile" }],
+      children: [
+        { name: "User Profile", href: "/profile" },
+        { name: "Change Password", href: "/profile/change-password" },
+      ],
     },
   ];
 
